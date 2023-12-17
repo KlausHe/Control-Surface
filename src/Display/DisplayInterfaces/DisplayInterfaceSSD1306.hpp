@@ -35,7 +35,8 @@ class SSD1306_DisplayInterface : public DisplayInterface {
     void setTextSize(uint8_t size) override { disp.setTextSize(size); }
     /// Set the cursor position.
     void setCursor(int16_t x, int16_t y) override { disp.setCursor(x, y); }
-
+    /// Invert the whole Display
+    void invertDisplay(boolean state) override { disp.invertDisplay(state); }
     /**
      * @brief   Write a character to the display.
      * 

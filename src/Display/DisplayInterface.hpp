@@ -39,7 +39,8 @@ class DisplayInterface : public Print {
     virtual void setTextSize(uint8_t size) = 0;
     /// Set the cursor position.
     virtual void setCursor(int16_t x, int16_t y) = 0;
-
+    /// Invert the whole Display
+    virtual void invertDisplay(boolean state) = 0;
     /**
      * @brief   Write a character to the display.
      * 
