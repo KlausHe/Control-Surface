@@ -31,6 +31,10 @@ class SSD1306_DisplayInterface : public DisplayInterface {
 
     /// Set the text color.
     void setTextColor(uint16_t color) override { disp.setTextColor(color); }
+    /// Set the text color and background.
+    void setTextColor(uint16_t color, uint16_t bgColor) override {
+        disp.setTextColor(color, bgColor);
+    }
     /// Set the text size.
     void setTextSize(uint8_t size) override { disp.setTextSize(size); }
     /// Set the cursor position.

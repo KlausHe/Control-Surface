@@ -35,6 +35,8 @@ class DisplayInterface : public Print {
 
     /// Set the text color.
     virtual void setTextColor(uint16_t color) = 0;
+    /// Set the text color and background.
+    virtual void setTextColor(uint16_t color, uint16_t bgColor) = 0;
     /// Set the text size.
     virtual void setTextSize(uint8_t size) = 0;
     /// Set the cursor position.
