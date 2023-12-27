@@ -4,6 +4,8 @@
 .vscode/ipch
 .cache
 
+.DS_Store
+
 .~lock*
 __pycache__/
 
