@@ -28,19 +28,22 @@ The interfaces you're most likely to use are:
     from the Serial Monitor.
 - @ref HardwareSerialMIDI_Interface : sends and receives MIDI over the TX and RX
     pins of the Arduino, can be used with standard 5-pin DIN MIDI.
+- @ref BluetoothMIDI_Interface : makes the Arduino advertise itself as a
+    Bluetooth Low Energy (BLE) MIDI peripheral, allowing you to send and receive
+    MIDI messages wirelessly.
 
-Other available interfaces are @ref BluetoothMIDI_Interface, 
-@ref HairlessMIDI_Interface, @ref SoftwareSerialMIDI_Interface, 
-@ref USBHostMIDI_Interface ...
+Other available interfaces are @ref HairlessMIDI_Interface,
+@ref SoftwareSerialMIDI_Interface, @ref USBHostMIDI_Interface ...
 
 ### Supported Arduino-compatible boards {#midi_md-interfaces-supported-boards}
 
 Not all MIDI interfaces are supported on all Arduino boards. For example, not 
 all Arduino boards support MIDI over USB natively. You can find an overview 
 of boards that do support it on the @ref md_pages_MIDI-over-USB page.
+USB Host MIDI is currently only supported on the Teensy 3.6 and 4.1 boards.
 
-MIDI over BLE is currently only supported on the ESP32.  
-USB Host MIDI is only supported on the Teensy 3.6 and 4.1 boards.
+MIDI over BLE is supported on the ESP32 and on boards supported by the
+ArduinoBLE library. More information can be found on the @ref md_pages_MIDI-over-BLE page.
 
 ### Functionality {#midi_md-interfaces-functionality}
 
@@ -50,9 +53,9 @@ whatever device is connected on the other side of the interface.
 - **Receiving MIDI**: MIDI messages sent by the device on the other side can 
 be read and inspected in your code, or you can register a callback that gets 
 called whenever a message arrives through the interface.
-- **Routing MIDI**: %Interfaces can be set up such that MIDI messages that arrive
-on one interface are automatically routed to other interfaces, and you can 
-filter or modify the messages in between.
+- **Routing MIDI**: %Interfaces can be configured to automatically route MIDI
+messages from one interface to others, allowing you to filter or modify the
+messages as they travel between interfaces.
 
 In the remainder of this tutorial, one section will be devoted to each of these
 functions.
@@ -804,14 +807,15 @@ USBDebugMIDI_Interface midi_dbg;
 BidirectionalMIDI_Pipe pipes;
 
 void setup() {
-    // Manually route MIDI output from Control_Surface to the MIDI interface,
-    // and the MIDI output from the MIDI interface to Control_Surface
+    // Manually route MIDI input from the debug interface to the USB interface,
+    // and the MIDI input from the USB interface to the debug interface
     midi_dbg | pipes | midi_usb;
     // Initialize the MIDI interfaces
     MIDI_Interface::beginAll();
 }
 
 void loop() {
+    // Continuously poll all interfaces and route the traffic between them
     MIDI_Interface::updateAll();
 }
 ```
@@ -882,3 +886,5 @@ functions. See @ref MIDI_Pipes-Filter.ino for more details.
 - @ref Dual-MIDI-Interface.ino
 - @ref MIDI-Monitor.ino
 - @ref MIDI_Pipes-Filter.ino
+- @ref USBMIDI-Adapter.ino
+- @ref BLEMIDI-Adapter.ino

@@ -49,6 +49,9 @@ class StreamMIDI_Interface : public MIDI_Interface {
   protected:
 #if !DISABLE_PIPES
     void handleStall() override { MIDI_Interface::handleStall(this); }
+#ifdef DEBUG_OUT
+    const char *getName() const override { return "ser"; }
+#endif
 #endif
 
   protected:
@@ -144,8 +147,7 @@ class USBSerialMIDI_Interface : public SerialMIDI_Interface<decltype(Serial)> {
 /**
  * @brief   A class for MIDI Interfaces sending and receiving
  *          data over the USB Serial CDC connection for the use
- *          with the [Hairless MIDI<->Serial Bridge]
- *          (http://projectgus.github.io/hairless-midiserial/).
+ *          with the [Hairless MIDI<->Serial Bridge](http://projectgus.github.io/hairless-midiserial/).
  * 
  * @ingroup MIDIInterfaces
  */

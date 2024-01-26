@@ -10,25 +10,26 @@ There are some differences in MIDI over USB implementation between different typ
 |:------------------------------------|:---:|:---:|:---:|:---:|
 | Arduino UNO R3                      | ✅  | &emsp;❌⁽¹⁾ | ❌  | ❌  |
 | Arduino Nano                        | ✅  | ❌  | ❌  | ❌  |
-| Arduino Nano 33 IoT                 | ✅  | 🔼  | ❓  | ❌  |
-| Arduino Nano RP2040                 | ✅  | 🔼  | ❓  | ❓  |
+| Arduino Nano 33 IoT                 | ✅  | 🔼  | ❓  | 🔼  |
+| Arduino Nano RP2040                 | ✅  | 🔼  | ❓  | 🔼  |
 | Arduino Nano ESP32                  | ✅  | 🔼  | ❓  | 🔼  |
-| Arduino Nano 33 BLE                 | ✅  | ✅  | &emsp;❌⁽⁴⁾  | ❓  |
+| Arduino Nano 33 BLE                 | ✅  | ✅  | &emsp;❌⁽⁴⁾  | ✅  |
 | Arduino Nano Every                  | ✅  | &emsp;❌⁽²⁾ | ❌  | ❌  |
-| Arduino MKR 1000                    | ✅  | 🔼  | ❓  | ❓  |
+| Arduino MKR 1000                    | ✅  | 🔼  | ❓  | ❌  |
+| Arduino MKR 1010 WiFi               | ✅  | 🔼  | ❓  | 🔼  |
 | Arduino UNO R4 Minima               | ✅  | &emsp;❌⁽³⁾  | &emsp;❌⁽⁴⁾  | ❌  |
-| Arduino UNO R4 WiFi                 | ✅  | &emsp;❌⁽³⁾  | &emsp;❌⁽⁴⁾  | ❓  |
+| Arduino UNO R4 WiFi                 | ✅  | &emsp;❌⁽³⁾  | &emsp;❌⁽⁴⁾  | 🔼  |
 | Arduino Leonardo                    | ✅  | ✅  | ❌  | ❌  |
 | Arduino Micro                       | ✅  | ✅  | ❌  | ❌  |
 | Arduino Zero                        | ✅  | 🔼  | ❓  | ❌  |
 | Arduino Mega 2560                   | ✅  | &emsp;❌⁽¹⁾ | ❌  | ❌  |
 | Arduino Due                         | ✅  | ✅  | ❓  | ❌  |
-| Arduino GIGA R1 WiFi                | ✅  | ❓  | &emsp;❌⁽⁴⁾  | ❌  |
+| Arduino GIGA R1 WiFi                | ✅  | ❓  | &emsp;❌⁽⁴⁾  | 🔼  |
 | Teensy 2.0, Teensy++ 2.0            | ✅  | 🔼  | ❌  | ❌  |
 | Teensy LC, 3.0, 3.1, 3.2, 3.5, 4.0  | ✅  | ✅  | ❓  | ❌  |
 | Teensy 3.6, 4.1                     | ✅  | ✅  | ✅  | ❌  |
 | Raspberry Pi Pico (RP2040)          | ✅  | ✅  | ❓  | ❌  |
-| Raspberry Pi Pico W (RP2040)        | ✅  | ✅  | ❓  | ❓  |
+| Raspberry Pi Pico W (RP2040)        | ✅  | ✅  | ❓  | ✅  |
 | ESP8266                             | ✅  | ❌  | ❌  | ❌  |
 | ESP32                               | ✅  | ❌  | ❌  | ✅  |
 | ESP32-S2                            | ✅  | 🔼  | ❓  | ❌  |
@@ -39,6 +40,8 @@ There are some differences in MIDI over USB implementation between different typ
 <small>(2) Secondary microcontroller could _in theory_ be flashed with custom MIDI firmware.</small>  
 <small>(3) Hardware supports it, but the Arduino core explicitly disables MIDI over USB support by setting `CFG_TUD_MIDI=0` in [their TinyUSB config](https://github.com/arduino/ArduinoCore-renesas/blob/6ee152ff2a9c00c8ab2ccff4f1eaee7e1f3388c1/variants/MINIMA/tusb_config.h#L81).</small>  
 <small>(4) Hardware supports it, but the Arduino core does not support it.</small>  
+
+See the @ref md_pages_MIDI-over-BLE page for more information about Bluetooth Low Energy support.
  
 ## Arduino boards with native USB support
 _Arduino Due, Arduino Leonardo, Arduino Micro, Arduino Nano 33 IOT, Arduino Zero, Arduino MKR Zero, Arduino MKR1000 ..._  

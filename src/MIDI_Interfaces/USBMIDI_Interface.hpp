@@ -37,18 +37,30 @@ class GenericUSBMIDI_Interface : public MIDI_Interface {
   private:
 #if !DISABLE_PIPES
     void handleStall() override { MIDI_Interface::handleStall(this); }
+#ifdef DEBUG_OUT
+    const char *getName() const override { return "usb"; }
+#endif
 #endif
 
   public:
+    /// @name   Initialization and polling
+    /// @{
+
+    /// Initialize.
     void begin() override;
+    /// Poll the backend (if necessary) and invoke the callbacks for any
+    /// received MIDI messages, as well as sending them over the pipes connected
+    /// to this interface.
     void update() override;
+
+    /// @}
 
   public:
     /// @name   Reading incoming MIDI messages
     /// @{
 
     /// Try reading and parsing a single incoming MIDI message.
-    /// @return Returns the type of the read message, or
+    /// @return Returns the type of the message read, or
     ///         `MIDIReadEvent::NO_MESSAGE` if no MIDI message was available.
     MIDIReadEvent read();
 
