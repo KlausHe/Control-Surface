@@ -1,3 +1,9 @@
+/**
+ * Combining a transposer and a bank to switch between different scales.
+ *
+ * @include Other/GitHub-issues/Note-ManyAddresses-Transposer/ManyAddressBankNoteButton.hpp
+ */
+
 #include "ManyAddressBankNoteButton.hpp"
 
 USBDebugMIDI_Interface midi;
@@ -20,17 +26,17 @@ IncrementDecrementSelector<2> scaleSelector {
 
 Bankable::ManyAddresses::ManyAddressBankNoteButton<2> buttons[] {
   {
-    {scaleBank, {MIDI_Notes::F_(4), MIDI_Notes::Gb(4)}},
+    {scaleBank, {MIDI_Notes::F[4], MIDI_Notes::Gb[4]}},
     transposer,
     2, // pin
   },
   {
-    {scaleBank, {MIDI_Notes::C(4), MIDI_Notes::Db(4)}},
+    {scaleBank, {MIDI_Notes::C[4], MIDI_Notes::Db[4]}},
     transposer,
     3, // pin
   },
   {
-    {scaleBank, {MIDI_Notes::G(4), MIDI_Notes::Ab(4)}},
+    {scaleBank, {MIDI_Notes::G[4], MIDI_Notes::Ab[4]}},
     transposer,
     4, // pin
   },
