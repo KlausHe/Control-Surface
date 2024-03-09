@@ -1,7 +1,6 @@
 #pragma once
 
 #include <cstddef>
-#include <tuple>
 
 #include <MIDI_Interfaces/USBMIDI/util/Atomic.hpp>
 #include <Settings/NamespaceSettings.hpp>
@@ -9,7 +8,7 @@
 BEGIN_CS_NAMESPACE
 
 /// Sends Bulk packets (IN for device mode, OUT for host mode)
-template <class Derived, class MessageTypeT, uint16_t PacketSizeV>
+template <class Derived, class MessageTypeT, uint16_t MaxPacketSizeV>
 struct BulkTX {
   public:
     using MessageType = MessageTypeT;
@@ -48,12 +47,15 @@ struct BulkTX {
     /// yet. If the latest packet is empty, this function has no effect.
     void send_now();
 
+    /// Check if all transfers have completed.
+    bool is_done() const;
+
   protected:
-    void reset();
+    void reset(uint16_t packet_size = MaxPacketSize);
 
   private:
-    static constexpr uint16_t PacketSize = PacketSizeV;
-    static constexpr uint16_t SizeReserved = PacketSize + 1;
+    static constexpr uint16_t MaxPacketSize = MaxPacketSizeV;
+    static constexpr uint16_t SizeReserved = MaxPacketSize + 1;
 
   protected:
     // Derived should implement the following methods:
@@ -80,13 +82,14 @@ struct BulkTX {
     /// State for writing outgoing USB-MIDI data.
     struct Writing {
         struct Buffer {
-            interrupt_atomic<uint16_t> size {0};
-            alignas(MessageType) uint8_t buffer[PacketSize];
+            uint16_t size {0};
+            alignas(MessageType) uint8_t buffer[MaxPacketSize];
         } buffers[2];
         interrupt_atomic<Buffer *> active_writebuffer {&buffers[0]};
         interrupt_atomic<Buffer *> sending {nullptr};
         interrupt_atomic<Buffer *> send_later {nullptr};
         interrupt_atomic<Buffer *> send_now {nullptr};
+        uint16_t packet_size = MaxPacketSize;
     } writing;
     using wbuffer_t = typename Writing::Buffer;
 
@@ -94,11 +97,7 @@ struct BulkTX {
     wbuffer_t *other_buf(wbuffer_t *p) {
         return &writing.buffers[!index_of(p)];
     }
-    uint32_t write_impl(const MessageType *msgs, uint32_t num_msgs,
-                        bool nonblocking);
-    std::tuple<wbuffer_t *, uint16_t> read_writebuf_size();
-    void send_now_impl_nonblock(wbuffer_t *write_buffer);
-    uint16_t prepare_tx(wbuffer_t *send_buffer);
+    uint32_t write_impl(const MessageType *msgs, uint32_t num_msgs);
 
   protected:
     void timeout_callback();

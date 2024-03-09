@@ -12,7 +12,11 @@
 
 BEGIN_CS_NAMESPACE
 
-#if defined(ARDUINO_ARCH_RP2040)
+#ifndef ARDUINO
+
+#define CS_USE_REAL_ATOMIC 1
+
+#elif defined(ARDUINO_ARCH_RP2040)
 
 class ScopedInterruptDisabler {
   public:
@@ -42,6 +46,10 @@ class ScopedInterruptDisabler {
     ScopedInterruptDisabler &operator=(ScopedInterruptDisabler &&) = delete;
 };
 
+#elif defined(TEENSYDUINO)
+
+// Not necessary (assuming we only support the higher end boards)
+
 #else
 #error "Unknown platform, I don't know how to disable and restore interrupts"
 #endif
@@ -50,7 +58,8 @@ class ScopedInterruptDisabler {
 // instructions, so they can implement read-modify-write operations without
 // disabling interrupts, which turns out to be faster.
 
-#if defined(DARDUINO_ARCH_NRF52840) || defined(DARDUINO_ARCH_MBED_GIGA)
+#if defined(DARDUINO_ARCH_NRF52840) || defined(DARDUINO_ARCH_MBED_GIGA) ||     \
+    defined(TEENSYDUINO)
 #define CS_USE_ATOMIC_RMW 1
 #else
 #define CS_USE_ATOMIC_RMW 0
