@@ -29,7 +29,9 @@ constexpr uint16_t midi_cccd_handle =
     ATT_CHARACTERISTIC_7772E5DB_3868_4112_A1A9_F2669D106BF3_01_CLIENT_CONFIGURATION_HANDLE;
 
 MIDIBLEInstance *instance = nullptr;
+BLESettings settings;
 btstack_packet_callback_registration_t hci_event_callback_registration;
+btstack_packet_callback_registration_t sm_event_callback_registration;
 
 // callback/event functions
 
@@ -41,6 +43,16 @@ void connection_handler(uint8_t *packet, [[maybe_unused]] uint16_t size) {
         return;
     uint16_t conn_handle =
         hci_subevent_le_connection_complete_get_connection_handle(packet);
+    // Request bonding
+    if (settings.initiate_security)
+        sm_request_pairing(conn_handle);
+    // Update the connection parameters
+    uint16_t conn_latency = 0;
+    uint16_t supervision_timeout = 400;
+    gap_request_connection_parameter_update(
+        conn_handle, settings.connection_interval.minimum,
+        settings.connection_interval.maximum, conn_latency,
+        supervision_timeout);
     instance->handleConnect(BLEConnectionHandle {conn_handle});
 }
 // HCI_SUBEVENT_LE_CONNECTION_UPDATE_COMPLETE
@@ -145,7 +157,10 @@ void packet_handler(uint8_t packet_type, [[maybe_unused]] uint16_t channel,
         case HCI_EVENT_DISCONNECTION_COMPLETE:
             disconnect_handler(packet, size);
             break;
-        default: break;
+        case SM_EVENT_JUST_WORKS_REQUEST:
+            sm_just_works_confirm(
+                sm_event_just_works_request_get_handle(packet));
+            break;
         case ATT_EVENT_MTU_EXCHANGE_COMPLETE:
             mtu_exchange_complete_handler(packet, size);
             break;
@@ -154,6 +169,7 @@ void packet_handler(uint8_t packet_type, [[maybe_unused]] uint16_t channel,
         case BTSTACK_EVENT_STATE:
             btstack_event_state_handler(packet, size);
             break;
+        default: break;
     }
 }
 
@@ -217,6 +233,9 @@ void le_midi_setup(const BLESettings &ble_settings) {
     l2cap_init();
     // setup SM: no input, no output
     sm_init();
+    sm_set_io_capabilities(IO_CAPABILITY_NO_INPUT_NO_OUTPUT);
+    sm_set_authentication_requirements(SM_AUTHREQ_SECURE_CONNECTION |
+                                       SM_AUTHREQ_BONDING);
     // setup ATT server
     att_server_init(profile_data, att_read_callback, att_write_callback);
     // setup advertisements
@@ -224,8 +243,11 @@ void le_midi_setup(const BLESettings &ble_settings) {
     // register for HCI events
     hci_event_callback_registration.callback = &packet_handler;
     hci_add_event_handler(&hci_event_callback_registration);
-    // register for ATT event
+    // register for ATT events
     att_server_register_packet_handler(packet_handler);
+    // register for SM events
+    sm_event_callback_registration.callback = &packet_handler;
+    sm_add_event_handler(&sm_event_callback_registration);
 }
 
 template <class F>
@@ -240,6 +262,7 @@ btstack_context_callback_registration_t create_context_callback(F &f) {
 
 bool init(MIDIBLEInstance &instance, BLESettings settings) {
     cs::midi_ble_btstack::instance = &instance;
+    cs::midi_ble_btstack::settings = settings;
     le_midi_setup(settings);
     hci_power_control(HCI_POWER_ON);
     // btstack_run_loop_execute(); // not necessary in background mode
