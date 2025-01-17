@@ -4,6 +4,7 @@
 #include <AH/Types/FunctionTraits.hpp>
 
 #include <AH/Arduino-Wrapper.h> // pin functions and constants
+#include <AH/STL/type_traits>
 
 #if defined(ARDUINO_API_VERSION)
 
@@ -62,8 +63,20 @@ constexpr PinMode_t INPUT_PULLUP = AH_pin_detail::tmp_INPUT_PULLUP;
 #endif // ARDUINO_API_VERSION
 
 BEGIN_AH_NAMESPACE
+
 template <class T>
-inline ArduinoPin_t arduino_pin_cast(T t) {
+constexpr ArduinoPin_t arduino_pin_cast(T t) {
     return static_cast<ArduinoPin_t>(t);
 }
+constexpr ArduinoPin_t arduino_pin_cast(pin_t t) { return t.pin; }
+#if (defined(NOT_AN_INTERRUPT) || defined(ARDUINO_API_VERSION)) &&             \
+    !defined(ARDUINO_ARCH_RENESAS)
+using not_an_interrupt_t = decltype(NOT_AN_INTERRUPT);
+/// Type of interrupt indices (result of digitalPinToInterrupt).
+using interrupt_t =
+    std::conditional<std::is_enum<not_an_interrupt_t>::value,
+                     std::underlying_type<not_an_interrupt_t>,
+                     type_identity<not_an_interrupt_t>>::type::type;
+#endif
+
 END_AH_NAMESPACE

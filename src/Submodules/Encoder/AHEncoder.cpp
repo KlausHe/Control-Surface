@@ -11,7 +11,7 @@ using interrupt_index_t = decltype(digitalPinToInterrupt(0));
 static interrupt_index_t interruptToIndex(interrupt_index_t i) { return i; }
 #endif
 
-AHEncoder::AHEncoder(uint8_t pinA, uint8_t pinB)
+AHEncoder::AHEncoder(ArduinoPin_t pinA, ArduinoPin_t pinB)
     : pins {pinA, pinB},
       direct_pins {direct_pin_read(pinA), direct_pin_read(pinB)} {
     // It's much faster to use the GPIO registers directly, rather than
@@ -21,7 +21,7 @@ AHEncoder::AHEncoder(uint8_t pinA, uint8_t pinB)
 }
 
 AHEncoder::AHEncoder(AHEncoder &&other)
-    : pins (other.pins), direct_pins (std::move(other.direct_pins)) {
+    : pins(other.pins), direct_pins(std::move(other.direct_pins)) {
     if (other.interrupts_in_use)
         FATAL_ERROR(F("Cannot move from initialized AHEncoder."), 0x9311);
 }
@@ -51,18 +51,18 @@ void swap(AHEncoder &a, AHEncoder &b) {
     std::swap(a.direct_pins, b.direct_pins);
     std::swap(a.position, b.position);
     if (a.interrupts_in_use > 0) {
-        int int1 = digitalPinToInterrupt(a.pins[0]);
+        interrupt_t int1 = digitalPinToInterrupt(a.pins[0]);
         if (int1 != NOT_AN_INTERRUPT)
             AHEncoder::instance_table[interruptToIndex(int1)] = &a;
-        int int2 = digitalPinToInterrupt(a.pins[1]);
+        interrupt_t int2 = digitalPinToInterrupt(a.pins[1]);
         if (int2 != NOT_AN_INTERRUPT)
             AHEncoder::instance_table[interruptToIndex(int2)] = &a;
     }
     if (b.interrupts_in_use > 0) {
-        int int1 = digitalPinToInterrupt(b.pins[0]);
+        interrupt_t int1 = digitalPinToInterrupt(b.pins[0]);
         if (int1 != NOT_AN_INTERRUPT)
             AHEncoder::instance_table[interruptToIndex(int1)] = &b;
-        int int2 = digitalPinToInterrupt(b.pins[1]);
+        interrupt_t int2 = digitalPinToInterrupt(b.pins[1]);
         if (int2 != NOT_AN_INTERRUPT)
             AHEncoder::instance_table[interruptToIndex(int2)] = &b;
     }
@@ -108,7 +108,7 @@ void AHEncoder::end() {
     }
 }
 
-void AHEncoder::attachInterruptCtx(int interrupt) {
+void AHEncoder::attachInterruptCtx(interrupt_t interrupt) {
     if (interrupt != NOT_AN_INTERRUPT) {
         if (instance_table[interruptToIndex(interrupt)] != nullptr) {
             FATAL_ERROR(F("Multiple encoders on the same pin"), 0x7283);
@@ -130,7 +130,7 @@ void AHEncoder::attachInterruptCtx(int interrupt) {
     }
 }
 
-void AHEncoder::detachInterruptCtx(int interrupt) {
+void AHEncoder::detachInterruptCtx(interrupt_t interrupt) {
     if (interrupt != NOT_AN_INTERRUPT) {
 #ifdef ARDUINO_ARCH_RP2040
         gpio_set_irq_enabled(interrupt, GPIO_IRQ_EDGE_FALL | GPIO_IRQ_EDGE_RISE,

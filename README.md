@@ -1,6 +1,6 @@
-[![Build Status](https://github.com/tttapa/Control-Surface/workflows/CI%20Tests/badge.svg?branch=main)](https://github.com/tttapa/Control-Surface/actions?query=workflow%3A"CI+Tests")
+[![CI Tests](https://github.com/tttapa/Control-Surface/actions/workflows/ccpp.yml/badge.svg)](https://github.com/tttapa/Control-Surface/actions/workflows/ccpp.yml)
 [![Test Coverage](https://img.shields.io/endpoint?url=https://tttapa.github.io/Control-Surface-doc/Coverage/shield.io.coverage.json)](https://tttapa.github.io/Control-Surface-doc/Coverage/index.html)
-[![Examples](https://github.com/tttapa/Control-Surface/workflows/Examples/badge.svg?branch=main)](https://github.com/tttapa/Control-Surface/actions?query=workflow%3AExamples)
+[![Examples](https://github.com/tttapa/Control-Surface/actions/workflows/examples.yaml/badge.svg)](https://github.com/tttapa/Control-Surface/actions/workflows/examples.yaml)
 [![GitHub](https://img.shields.io/github/stars/tttapa/Control-Surface?label=GitHub&logo=github)](https://github.com/tttapa/Control-Surface)
 [![Documentation](https://img.shields.io/badge/Documentation-main-blue)](https://tttapa.github.io/Control-Surface-doc/Doxygen)
 
@@ -300,6 +300,17 @@ documentation page for a table with supported features per board.
 
 ### 2.x
 
+- ([7bd5268](https://github.com/tttapa/Control-Surface/commit/7bd5268fe8906ba4fbd01024fbddc8598ffd9eb3))  
+   The `pin_t` type is now a distinct type rather than an alias to an integer.
+   This improves type safety, because `pin_t` is no longer implicitly
+   convertible to an integer (although integers are still convertible to
+   `pin_t`), and it is no longer possible to accidentally use incorrect
+   constructs such as `mux.digitalRead(mux.pin(0))`. A new type, `pin_int_t`,
+   was added to represent sizes and offsets of pins (e.g. “the sixth pin of this
+   multiplexer)”, and the argument types of the member functions of the
+   ExtendedIOElement class have been modified accordingly. If you were using a
+   class that inherited from ExtendedIOElement, you should update the signatures
+   of any overridden methods.
 - ([b0f4d63](https://github.com/tttapa/Control-Surface/commit/b0f4d636838b12907bea6cf989d20760a8a998bf))  
    Replace `MIDI_Notes::X(n)` by `MIDI_Notes::X[n]` to avoid issues with the Arduino `F(...)` macro.
 - ([7b0eee1](https://github.com/tttapa/Control-Surface/commit/7b0eee16f15d730f0d68f6e38e6a60c634d861ad))  

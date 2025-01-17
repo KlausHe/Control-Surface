@@ -15,17 +15,16 @@ BEGIN_AH_NAMESPACE
  * adding multiplexers, shift registers, IO expanders, etc.  
  * ExtendedIOElement serves as a base class for all these expanders.
  *
- * The pins of each extended IO element are mapped to a pin number
- * greater than the greatest Arduino pin number.  
- * You can supply this pin number to the IO functions in the ExtIO
+ * The pins of each extended IO element are mapped to a pin number greater than
+ * the greatest Arduino pin number, represented by the @ref ExtIO::pin_t type.  
+ * You can supply this pin number to the IO functions in the @ref ExtIO
  * namespace.  
- * If the pin number corresponds to an actual Arduino pin,
- * the default Arduino IO function (digitalRead, digitalWrite, ...)
- * will be called.  
- * If the pin is not an Arduino pin, it is an extended IO pin number,
- * so the extended IO element that this pin belongs to is looked up,
- * and the IO function for this element is executed with the correct
- * pin number.
+ * If the pin number corresponds to an actual Arduino pin, the default Arduino
+ * IO function (`digitalRead`, `digitalWrite, ...) will be called.  
+ * If the pin number does not correspond to a valid Arduino pin, it is an
+ * extended IO pin number, so the extended IO element that this pin belongs to
+ * is looked up, and the IO function for this element is executed with the
+ * correct pin number.
  *
  * For example:
  * Imagine an Arduino with 20 pins (e.g. the Arduino UNO).
@@ -35,27 +34,26 @@ BEGIN_AH_NAMESPACE
  * Now, we'll add two 8-channel analog multiplexers, let's call them
  * `mux1` and `mux2`.  
  * The first pin (pin 0) of `mux1` will be extended IO pin number 20,
- * the last pin (pin 7) of `mux1` will be extended IO pin number 27,
- * etc.
- * The first pin of `mux2` will be extended IO pin number 28, you get
- * the idea.
+ * the last pin (pin 7) of `mux1` will be extended IO pin number 27, etc.
+ * The first pin of `mux2` will be extended IO pin number 28, you get the idea.
  * If you now call `ExtIO::digitalRead(mux1.#pin (7))` or
- * `ExtIO::digitalRead(27)`, both will be
- * translated to `mux1.digitalRead(7)`.
+ * `ExtIO::digitalRead(27)`, both will be translated to `mux1.digitalRead(7)`.
  *
  * The number of extended IO elements is limited only by the size of
  * `pin_t`. However, looking up the extended IO element for a given
  * extended IO pin number uses linear search, so that might add
- * some noticable overhead for large pin numbers.  
+ * some noticeable overhead for large pin numbers.  
  * 
  * The design here is a compromise: saving a pointer to each extended IO element
- * to find it directly would be much faster than having to search all elements
- * each time. On the other hand, it would require each `pin_t` variable to be
- * at least one byte larger. Since almost all other classes in this library 
- * store pin variables, the memory penalty would be too large, especially on AVR
+ * to find it directly would be faster than having to search all elements each
+ * time. On the other hand, it would require each `pin_t` variable to be at
+ * least one byte larger. Since almost all other classes in this library store
+ * pin variables, the memory penalty would be too large, especially on AVR
  * microcontrollers.  
  * Another reason to do it this way, is that this approach is still fast enough
- * to make sure it is not noticable to human users.
+ * to make sure it is not noticeable to human users.  
+ * If you need faster extended GPIO access, you can use the
+ * @ref ExtIO::CachedExtIOPin class.
  */
 class ExtendedIOElement : public UpdatableCRTP<ExtendedIOElement> {
   protected:
@@ -65,7 +63,7 @@ class ExtendedIOElement : public UpdatableCRTP<ExtendedIOElement> {
      * @param   length
      *          The number of pins this element has.
      */
-    ExtendedIOElement(pin_t length);
+    ExtendedIOElement(pin_int_t length);
 
     /// Copying not allowed.
     ExtendedIOElement(const ExtendedIOElement &) = delete;
@@ -94,7 +92,7 @@ class ExtendedIOElement : public UpdatableCRTP<ExtendedIOElement> {
      *          The mode to set the pin to (e.g. `INPUT`, `OUTPUT` or 
      *          `INPUT_PULLUP`).
      */
-    virtual void pinMode(pin_t pin, PinMode_t mode) {
+    virtual void pinMode(pin_int_t pin, PinMode_t mode) {
         pinModeBuffered(pin, mode);
         updateBufferedOutputs();
     }
@@ -105,7 +103,7 @@ class ExtendedIOElement : public UpdatableCRTP<ExtendedIOElement> {
      * is called.
      * @copydetails pinMode
      */
-    virtual void pinModeBuffered(pin_t pin, PinMode_t mode) = 0;
+    virtual void pinModeBuffered(pin_int_t pin, PinMode_t mode) = 0;
 
     /** 
      * @brief   Set the output of the given pin to the given state.
@@ -115,7 +113,7 @@ class ExtendedIOElement : public UpdatableCRTP<ExtendedIOElement> {
      * @param   state
      *          The new state to set the pin to.
      */
-    virtual void digitalWrite(pin_t pin, PinStatus_t state) {
+    virtual void digitalWrite(pin_int_t pin, PinStatus_t state) {
         digitalWriteBuffered(pin, state);
         updateBufferedOutputs();
     }
@@ -126,7 +124,7 @@ class ExtendedIOElement : public UpdatableCRTP<ExtendedIOElement> {
      * is called.
      * @copydetails digitalWrite
      */
-    virtual void digitalWriteBuffered(pin_t pin, PinStatus_t state) = 0;
+    virtual void digitalWriteBuffered(pin_int_t pin, PinStatus_t state) = 0;
 
     /** 
      * @brief   Read the state of the given pin.
@@ -135,7 +133,7 @@ class ExtendedIOElement : public UpdatableCRTP<ExtendedIOElement> {
      *          The (zero-based) pin of this IO element.
      * @return  The state of the given pin.
      */
-    virtual PinStatus_t digitalRead(pin_t pin) {
+    virtual PinStatus_t digitalRead(pin_int_t pin) {
         updateBufferedInputs();
         return digitalReadBuffered(pin);
     }
@@ -145,7 +143,7 @@ class ExtendedIOElement : public UpdatableCRTP<ExtendedIOElement> {
      * To update the buffer, you have to call @ref updateBufferedInputs first.
      * @copydetails digitalRead
      */
-    virtual PinStatus_t digitalReadBuffered(pin_t pin) = 0;
+    virtual PinStatus_t digitalReadBuffered(pin_int_t pin) = 0;
 
     /**
      * @brief   Write an analog (or PWM) value to the given pin.
@@ -155,7 +153,7 @@ class ExtendedIOElement : public UpdatableCRTP<ExtendedIOElement> {
      * @param   val 
      *          The new analog value to set the pin to.
      */
-    virtual void analogWrite(pin_t pin, analog_t val) {
+    virtual void analogWrite(pin_int_t pin, analog_t val) {
         analogWriteBuffered(pin, val);
         updateBufferedOutputs();
     }
@@ -166,7 +164,7 @@ class ExtendedIOElement : public UpdatableCRTP<ExtendedIOElement> {
      * is called.
      * @copydetails analogWrite
      */
-    virtual void analogWriteBuffered(pin_t pin, analog_t val) = 0;
+    virtual void analogWriteBuffered(pin_int_t pin, analog_t val) = 0;
 
     /**
      * @brief   Read the analog value of the given pin.
@@ -175,7 +173,7 @@ class ExtendedIOElement : public UpdatableCRTP<ExtendedIOElement> {
      *          The (zero-based) pin of this IO element.
      * @return  The new analog value of pin.
      */
-    virtual analog_t analogRead(pin_t pin) {
+    virtual analog_t analogRead(pin_int_t pin) {
         updateBufferedInputs();
         return analogReadBuffered(pin);
     }
@@ -185,7 +183,7 @@ class ExtendedIOElement : public UpdatableCRTP<ExtendedIOElement> {
      * To update the buffer, you have to call @ref updateBufferedInputs first.
      * @copydetails analogRead
      */
-    virtual analog_t analogReadBuffered(pin_t pin) = 0;
+    virtual analog_t analogReadBuffered(pin_int_t pin) = 0;
 
     /**
      * @brief   Initialize the extended IO element.
@@ -226,7 +224,7 @@ class ExtendedIOElement : public UpdatableCRTP<ExtendedIOElement> {
      *          The zero-based physical pin number of this IO element.
      * @return  The global, unique extended IO pin number for the given pin.
      */
-    pin_t pin(pin_t pin) const;
+    pin_t pin(pin_int_t pin) const;
 
     /**
      * @brief   Get the extended IO pin number of a given physical pin of this
@@ -236,14 +234,14 @@ class ExtendedIOElement : public UpdatableCRTP<ExtendedIOElement> {
      *          The zero-based physical pin number of this IO element.
      * @return  The global, unique extended IO pin number for the given pin.
      */
-    pin_t operator[](pin_t pin) const;
+    pin_t operator[](pin_int_t pin) const;
 
     /**
      * @brief Get the number of pins this IO element has.
      * 
      * @return The number of pins this IO element has. 
      */
-    pin_t getLength() const;
+    pin_int_t getLength() const;
 
     /**
      * @brief   Get the largest global extended IO pin number that belongs to
@@ -263,7 +261,7 @@ class ExtendedIOElement : public UpdatableCRTP<ExtendedIOElement> {
     static DoublyLinkedList<ExtendedIOElement> &getAll();
 
   private:
-    const pin_t length;
+    const pin_int_t length;
     const pin_t start;
     const pin_t end;
     static pin_t offset;
@@ -275,22 +273,22 @@ struct CachedExtIOPin {
     explicit CachedExtIOPin(pin_t pin)
         : element(pin == NO_PIN || isNativePin(pin) ? nullptr
                                                     : getIOElementOfPin(pin)),
-          elementPin(element ? pin - element->getStart() : pin) {}
+          elementPin(element ? pin - element->getStart() : pin.pin) {}
 
     template <class FRet, class... FArgs, class Fallback>
     FRet __attribute__((always_inline))
-    apply(FRet (ExtendedIOElement::*func)(pin_t, FArgs...), Fallback &&fallback,
-          FArgs... args) {
+    apply(FRet (ExtendedIOElement::*func)(pin_int_t, FArgs...),
+          Fallback &&fallback, FArgs... args) {
         if (element != nullptr)
             return (element->*func)(elementPin, args...);
-        else if (elementPin != NO_PIN)
+        else if (elementPin != NO_PIN_INT)
             return fallback(arduino_pin_cast(elementPin), args...);
         else
             return static_cast<FRet>(0);
     }
 
     ExtendedIOElement *element;
-    pin_t elementPin;
+    pin_int_t elementPin;
 };
 
 /// An ExtIO version of the Arduino function

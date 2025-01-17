@@ -29,71 +29,56 @@ ExtendedIOElement *getIOElementOfPin(pin_t pin) {
     return el;
 }
 
-template <class T>
-ArduinoPin_t arduino_pin_cast(T t) {
-    return static_cast<ArduinoPin_t>(t);
-}
-
 void pinMode(pin_t pin, PinMode_t mode) {
     if (pin == NO_PIN)
         return; // LCOV_EXCL_LINE
     else if (isNativePin(pin)) {
-        ::pinMode(pin, mode);
+        ::pinMode(arduino_pin_cast(pin), mode);
     } else {
         auto el = getIOElementOfPin(pin);
         el->pinMode(pin - el->getStart(), mode);
     }
-}
-void pinMode(int pin, PinMode_t mode) {
-    ::pinMode(arduino_pin_cast(pin), mode);
 }
 
 void digitalWrite(pin_t pin, PinStatus_t val) {
     if (pin == NO_PIN)
         return; // LCOV_EXCL_LINE
     else if (isNativePin(pin)) {
-        ::digitalWrite(pin, val);
+        ::digitalWrite(arduino_pin_cast(pin), val);
     } else {
         auto el = getIOElementOfPin(pin);
         el->digitalWrite(pin - el->getStart(), val);
     }
-}
-void digitalWrite(int pin, PinStatus_t val) {
-    ::digitalWrite(arduino_pin_cast(pin), val);
 }
 
 PinStatus_t digitalRead(pin_t pin) {
     if (pin == NO_PIN)
         return LOW; // LCOV_EXCL_LINE
     else if (isNativePin(pin)) {
-        return ::digitalRead(pin);
+        return ::digitalRead(arduino_pin_cast(pin));
     } else {
         auto el = getIOElementOfPin(pin);
         return el->digitalRead(pin - el->getStart());
     }
-}
-PinStatus_t digitalRead(int pin) {
-    return ::digitalRead(arduino_pin_cast(pin));
 }
 
 analog_t analogRead(pin_t pin) {
     if (pin == NO_PIN)
         return 0; // LCOV_EXCL_LINE
     else if (isNativePin(pin)) {
-        return ::analogRead(pin);
+        return ::analogRead(arduino_pin_cast(pin));
     } else {
         auto el = getIOElementOfPin(pin);
         return el->analogRead(pin - el->getStart());
     }
 }
-analog_t analogRead(int pin) { return ::analogRead(arduino_pin_cast(pin)); }
 
 void analogWrite(pin_t pin, analog_t val) {
     if (pin == NO_PIN)
         return; // LCOV_EXCL_LINE
     else if (isNativePin(pin)) {
 #ifndef ESP32
-        ::analogWrite(pin, val);
+        ::analogWrite(arduino_pin_cast(pin), val);
 #endif
     } else {
         auto el = getIOElementOfPin(pin);
@@ -101,20 +86,12 @@ void analogWrite(pin_t pin, analog_t val) {
     }
 }
 void analogWrite(pin_t pin, int val) { analogWrite(pin, (analog_t)val); }
-#ifndef ESP32
-void analogWrite(int pin, analog_t val) {
-    ::analogWrite(arduino_pin_cast(pin), val);
-}
-void analogWrite(int pin, int val) {
-    ::analogWrite(arduino_pin_cast(pin), val);
-}
-#endif
 
 void pinModeBuffered(pin_t pin, PinMode_t mode) {
     if (pin == NO_PIN)
         return; // LCOV_EXCL_LINE
     else if (isNativePin(pin)) {
-        ::pinMode(pin, mode);
+        ::pinMode(arduino_pin_cast(pin), mode);
     } else {
         auto el = getIOElementOfPin(pin);
         el->pinModeBuffered(pin - el->getStart(), mode);
@@ -125,7 +102,7 @@ void digitalWriteBuffered(pin_t pin, PinStatus_t val) {
     if (pin == NO_PIN)
         return; // LCOV_EXCL_LINE
     else if (isNativePin(pin)) {
-        ::digitalWrite(pin, val);
+        ::digitalWrite(arduino_pin_cast(pin), val);
     } else {
         auto el = getIOElementOfPin(pin);
         el->digitalWriteBuffered(pin - el->getStart(), val);
@@ -136,7 +113,7 @@ PinStatus_t digitalReadBuffered(pin_t pin) {
     if (pin == NO_PIN)
         return LOW; // LCOV_EXCL_LINE
     else if (isNativePin(pin)) {
-        return ::digitalRead(pin);
+        return ::digitalRead(arduino_pin_cast(pin));
     } else {
         auto el = getIOElementOfPin(pin);
         return el->digitalReadBuffered(pin - el->getStart());
@@ -147,7 +124,7 @@ analog_t analogReadBuffered(pin_t pin) {
     if (pin == NO_PIN)
         return 0; // LCOV_EXCL_LINE
     else if (isNativePin(pin)) {
-        return ::analogRead(pin);
+        return ::analogRead(arduino_pin_cast(pin));
     } else {
         auto el = getIOElementOfPin(pin);
         return el->analogReadBuffered(pin - el->getStart());
@@ -160,7 +137,7 @@ void analogWriteBuffered(pin_t pin, analog_t val) {
         return; // LCOV_EXCL_LINE
     else if (isNativePin(pin)) {
 #ifndef ESP32
-        ::analogWrite(pin, val);
+        ::analogWrite(arduino_pin_cast(pin), val);
 #endif
     } else {
         auto el = getIOElementOfPin(pin);
@@ -176,7 +153,8 @@ void shiftOut(pin_t dataPin, pin_t clockPin, BitOrder_t bitOrder, uint8_t val) {
         return;
     // Native version
     if (isNativePin(dataPin) && isNativePin(clockPin)) {
-        ::shiftOut((int)dataPin, (int)clockPin, bitOrder, val);
+        ::shiftOut(arduino_pin_cast(dataPin), arduino_pin_cast(clockPin),
+                   bitOrder, val);
     }
     // ExtIO version
     else if (!isNativePin(dataPin) && !isNativePin(clockPin)) {
@@ -201,38 +179,6 @@ void shiftOut(pin_t dataPin, pin_t clockPin, BitOrder_t bitOrder, uint8_t val) {
         }
     }
 }
-void shiftOut(int dataPin, int clockPin, BitOrder_t bitOrder, uint8_t val) {
-    ::shiftOut(arduino_pin_cast(dataPin), arduino_pin_cast(clockPin), bitOrder,
-               val);
-}
-
-#if UINT16_MAX != UINT_MAX
-void pinMode(unsigned int pin, PinMode_t mode) {
-    ::pinMode(arduino_pin_cast(pin), mode);
-}
-void digitalWrite(unsigned int pin, PinStatus_t val) {
-    ::digitalWrite(arduino_pin_cast(pin), val);
-}
-PinStatus_t digitalRead(unsigned int pin) {
-    return ::digitalRead(arduino_pin_cast(pin));
-}
-analog_t analogRead(unsigned int pin) {
-    return ::analogRead(arduino_pin_cast(pin));
-}
-#ifndef ESP32
-void analogWrite(unsigned int pin, analog_t val) {
-    ::analogWrite(arduino_pin_cast(pin), val);
-}
-void analogWrite(unsigned int pin, int val) {
-    ::analogWrite(arduino_pin_cast(pin), val);
-}
-#endif
-void shiftOut(unsigned int dataPin, unsigned int clockPin, BitOrder_t bitOrder,
-              uint8_t val) {
-    ::shiftOut(arduino_pin_cast(dataPin), arduino_pin_cast(clockPin), bitOrder,
-               val);
-}
-#endif
 
 } // namespace ExtIO
 

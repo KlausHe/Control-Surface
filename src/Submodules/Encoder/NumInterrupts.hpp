@@ -102,8 +102,15 @@ BEGIN_CS_NAMESPACE
 #error                                                                         \
     "This version of the ArduinoCore-renesas is not supported. Please open an issue on GitHub: https://github.com/tttapa/Control-Surface/issues"
 #endif
-#define NOT_AN_INTERRUPT 255
-constexpr pin_size_t pin_to_interrupt_index[] {
+END_CS_NAMESPACE
+BEGIN_AH_NAMESPACE
+using not_an_interrupt_t = pin_size_t;
+using interrupt_t = not_an_interrupt_t;
+END_AH_NAMESPACE
+#define NOT_AN_INTERRUPT ((::AH::not_an_interrupt_t)255)
+BEGIN_CS_NAMESPACE
+using AH::interrupt_t;
+constexpr interrupt_t pin_to_interrupt_index[] {
     0,                // GPIO 0  (P301)                          IRQ6
     1,                // GPIO 1  (P302)                     IRQ5
     2,                // GPIO 2  (P104)      IRQ1
@@ -125,12 +132,12 @@ constexpr pin_size_t pin_to_interrupt_index[] {
     11,               // GPIO 18 (P101)      IRQ1
     12,               // GPIO 19 (P100)           IRQ2
 };
-inline pin_size_t digitalPinToInterrupt(pin_size_t pin) {
+inline interrupt_t digitalPinToInterrupt(pin_size_t pin) {
     if (pin_to_interrupt_index[pin] == NOT_AN_INTERRUPT)
         return NOT_AN_INTERRUPT;
     return ::digitalPinToInterrupt(pin);
 }
-inline pin_size_t interruptToIndex(pin_size_t interrupt) {
+inline interrupt_t interruptToIndex(interrupt_t interrupt) {
     return pin_to_interrupt_index[interrupt];
 }
 #define CS_CUSTOM_INTERRUPT_TO_INDEX 1

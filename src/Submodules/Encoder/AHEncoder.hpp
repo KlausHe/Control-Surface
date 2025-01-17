@@ -4,8 +4,10 @@
 #include "DirectPinRead.hpp"
 #include "NumInterrupts.hpp"
 #include <AH/Containers/Array.hpp>
+#include <AH/Hardware/Arduino-Hardware-Types.hpp>
 
 BEGIN_CS_NAMESPACE
+using AH::interrupt_t;
 
 // Use IRAM_ATTR for ISRs to prevent ESP8266 resets
 #if defined(ESP8266) || defined(ESP32)
@@ -14,7 +16,7 @@ BEGIN_CS_NAMESPACE
 #define CS_ENCODER_ISR_ATTR
 #endif
 
-// Largest interrupt number.
+/// Available number of interrupts.
 #define CS_ENCODER_ARGLIST_SIZE CORE_NUM_INTERRUPT
 
 /// Class for reading quadrature encoders, heavily influenced by
@@ -32,7 +34,7 @@ class AHEncoder {
      * The internal pull-up resistors will be enabled on these pins upon
      * initialization (when calling the `begin` method).
      */
-    AHEncoder(uint8_t pinA, uint8_t pinB);
+    AHEncoder(ArduinoPin_t pinA, ArduinoPin_t pinB);
 
     /// Copy constructor: copying an Encoder object is semantically meaningless,
     /// so it has been deleted.
@@ -70,15 +72,15 @@ class AHEncoder {
   private:
     using isr_func_t = void (*)(); ///< The type of a handler function.
     /// Get a pointer to the interrupt handler function for the given interrupt.
-    template <unsigned NumISR = CS_ENCODER_ARGLIST_SIZE>
-    static isr_func_t get_isr(unsigned interrupt);
+    template <interrupt_t NumISR = CS_ENCODER_ARGLIST_SIZE>
+    static isr_func_t get_isr(interrupt_t interrupt);
     /// Register the interrupt handler for this instance.
-    void attachInterruptCtx(int interrupt);
+    void attachInterruptCtx(interrupt_t interrupt);
     /// Un-register the interrupt handler for this instance.
-    void detachInterruptCtx(int interrupt);
+    void detachInterruptCtx(interrupt_t interrupt);
 
   private:
-    AH::Array<uint8_t, 2> pins;
+    AH::Array<ArduinoPin_t, 2> pins;
     uint8_t interrupts_in_use = 0;
     uint8_t state = 0;
     AH::Array<DirectPinRead, 2> direct_pins;

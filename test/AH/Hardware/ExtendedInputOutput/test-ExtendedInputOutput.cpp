@@ -6,23 +6,55 @@
 
 using namespace ::testing;
 USING_AH_NAMESPACE;
-using namespace ExtIO;
 
 class MockExtIOElement : public ExtendedIOElement {
   public:
-    MockExtIOElement(pin_t length) : ExtendedIOElement(length) {}
+    static_assert(!std::is_same<pin_int_t, int>::value, "");
+    MockExtIOElement(pin_int_t length) : ExtendedIOElement(length) {}
 
-    MOCK_METHOD(void, pinMode, (pin_t, uint8_t), (override));
-    MOCK_METHOD(void, digitalWrite, (pin_t, uint8_t), (override));
-    MOCK_METHOD(PinStatus_t, digitalRead, (pin_t), (override));
-    MOCK_METHOD(analog_t, analogRead, (pin_t), (override));
-    MOCK_METHOD(void, analogWrite, (pin_t, analog_t), (override));
+    void pinMode(pin_int_t p, uint8_t m) override {
+        pinMode(static_cast<int>(p), m);
+    };
+    void digitalWrite(pin_int_t p, uint8_t v) override {
+        digitalWrite(static_cast<int>(p), v);
+    };
+    PinStatus_t digitalRead(pin_int_t p) override {
+        return digitalRead(static_cast<int>(p));
+    };
+    analog_t analogRead(pin_int_t p) override {
+        return analogRead(static_cast<int>(p));
+    };
+    void analogWrite(pin_int_t p, analog_t v) override {
+        analogWrite(static_cast<int>(p), v);
+    };
 
-    MOCK_METHOD(void, pinModeBuffered, (pin_t, uint8_t), (override));
-    MOCK_METHOD(void, digitalWriteBuffered, (pin_t, uint8_t), (override));
-    MOCK_METHOD(PinStatus_t, digitalReadBuffered, (pin_t), (override));
-    MOCK_METHOD(analog_t, analogReadBuffered, (pin_t), (override));
-    MOCK_METHOD(void, analogWriteBuffered, (pin_t, analog_t), (override));
+    MOCK_METHOD(void, pinMode, (int, uint8_t), ());
+    MOCK_METHOD(void, digitalWrite, (int, uint8_t), ());
+    MOCK_METHOD(PinStatus_t, digitalRead, (int), ());
+    MOCK_METHOD(analog_t, analogRead, (int), ());
+    MOCK_METHOD(void, analogWrite, (int, analog_t), ());
+
+    void pinModeBuffered(pin_int_t p, uint8_t m) override {
+        pinModeBuffered(static_cast<int>(p), m);
+    };
+    void digitalWriteBuffered(pin_int_t p, uint8_t v) override {
+        digitalWriteBuffered(static_cast<int>(p), v);
+    };
+    PinStatus_t digitalReadBuffered(pin_int_t p) override {
+        return digitalReadBuffered(static_cast<int>(p));
+    };
+    analog_t analogReadBuffered(pin_int_t p) override {
+        return analogReadBuffered(static_cast<int>(p));
+    };
+    void analogWriteBuffered(pin_int_t p, analog_t v) override {
+        analogWriteBuffered(static_cast<int>(p), v);
+    };
+
+    MOCK_METHOD(void, pinModeBuffered, (int, uint8_t), ());
+    MOCK_METHOD(void, digitalWriteBuffered, (int, uint8_t), ());
+    MOCK_METHOD(PinStatus_t, digitalReadBuffered, (int), ());
+    MOCK_METHOD(analog_t, analogReadBuffered, (int), ());
+    MOCK_METHOD(void, analogWriteBuffered, (int, analog_t), ());
 
     MOCK_METHOD(void, begin, (), (override));
     MOCK_METHOD(void, updateBufferedOutputs, (), (override));
@@ -31,13 +63,30 @@ class MockExtIOElement : public ExtendedIOElement {
 
 class MinimalMockExtIOElement : public ExtendedIOElement {
   public:
-    MinimalMockExtIOElement(pin_t length) : ExtendedIOElement(length) {}
+    static_assert(!std::is_same<pin_int_t, int>::value, "");
+    MinimalMockExtIOElement(pin_int_t length) : ExtendedIOElement(length) {}
 
-    MOCK_METHOD(void, pinModeBuffered, (pin_t, uint8_t), (override));
-    MOCK_METHOD(void, digitalWriteBuffered, (pin_t, uint8_t), (override));
-    MOCK_METHOD(PinStatus_t, digitalReadBuffered, (pin_t), (override));
-    MOCK_METHOD(analog_t, analogReadBuffered, (pin_t), (override));
-    MOCK_METHOD(void, analogWriteBuffered, (pin_t, analog_t), (override));
+    void pinModeBuffered(pin_int_t p, uint8_t m) override {
+        pinModeBuffered(static_cast<int>(p), m);
+    };
+    void digitalWriteBuffered(pin_int_t p, uint8_t v) override {
+        digitalWriteBuffered(static_cast<int>(p), v);
+    };
+    PinStatus_t digitalReadBuffered(pin_int_t p) override {
+        return digitalReadBuffered(static_cast<int>(p));
+    };
+    analog_t analogReadBuffered(pin_int_t p) override {
+        return analogReadBuffered(static_cast<int>(p));
+    };
+    void analogWriteBuffered(pin_int_t p, analog_t v) override {
+        analogWriteBuffered(static_cast<int>(p), v);
+    };
+
+    MOCK_METHOD(void, pinModeBuffered, (int, uint8_t), ());
+    MOCK_METHOD(void, digitalWriteBuffered, (int, uint8_t), ());
+    MOCK_METHOD(PinStatus_t, digitalReadBuffered, (int), ());
+    MOCK_METHOD(analog_t, analogReadBuffered, (int), ());
+    MOCK_METHOD(void, analogWriteBuffered, (int, analog_t), ());
 
     MOCK_METHOD(void, begin, (), (override));
     MOCK_METHOD(void, updateBufferedOutputs, (), (override));
@@ -73,7 +122,7 @@ TEST(ExtendedInputOutput, digitalRead) {
     EXPECT_CALL(el_2, digitalRead(9));
     digitalRead(el_2.pin(9));
 
-    CachedExtIOPin c_el_1_5{el_1.pin(5)};
+    CachedExtIOPin c_el_1_5 {el_1.pin(5)};
     EXPECT_CALL(el_1, digitalRead(5));
     digitalRead(c_el_1_5);
 
@@ -106,7 +155,7 @@ TEST(ExtendedInputOutput, analogRead) {
     EXPECT_CALL(el_2, analogRead(9));
     analogRead(el_2.pin(9));
 
-    CachedExtIOPin c_el_1_5{el_1.pin(5)};
+    CachedExtIOPin c_el_1_5 {el_1.pin(5)};
     EXPECT_CALL(el_1, analogRead(5));
     analogRead(c_el_1_5);
 
@@ -139,7 +188,7 @@ TEST(ExtendedInputOutput, digitalWrite) {
     EXPECT_CALL(el_2, digitalWrite(9, HIGH));
     digitalWrite(el_2.pin(9), HIGH);
 
-    CachedExtIOPin c_el_1_5{el_1.pin(5)};
+    CachedExtIOPin c_el_1_5 {el_1.pin(5)};
     EXPECT_CALL(el_1, digitalWrite(5, LOW));
     digitalWrite(c_el_1_5, LOW);
 
@@ -178,7 +227,7 @@ TEST(ExtendedInputOutput, analogWrite) {
     EXPECT_CALL(el_2, analogWrite(9, 1));
     analogWrite(el_2.pin(9), 1);
 
-    CachedExtIOPin c_el_1_5{el_1.pin(5)};
+    CachedExtIOPin c_el_1_5 {el_1.pin(5)};
     EXPECT_CALL(el_1, analogWrite(5, 125));
     analogWrite(c_el_1_5, analog_t(125));
     EXPECT_CALL(el_1, analogWrite(5, 124));
@@ -213,7 +262,7 @@ TEST(ExtendedInputOutput, pinMode) {
     EXPECT_CALL(el_2, pinMode(9, INPUT_PULLUP));
     pinMode(el_2.pin(9), INPUT_PULLUP);
 
-    CachedExtIOPin c_el_1_5{el_1.pin(5)};
+    CachedExtIOPin c_el_1_5 {el_1.pin(5)};
     EXPECT_CALL(el_1, pinMode(5, OUTPUT));
     pinMode(c_el_1_5, OUTPUT);
 
@@ -273,7 +322,8 @@ TEST(ExtendedInputOutput, nonExistentPinOfDeletedElement) {
 }
 
 TEST(ExtendedInputOutput, outOfPinNumbers) {
-    pin_t max = std::numeric_limits<pin_t>::max();
+    pin_int_t max = std::numeric_limits<pin_int_t>::max() / 2;
+    max += max / 2;
     try {
         MockExtIOElement el_1 = {max};
         FAIL();

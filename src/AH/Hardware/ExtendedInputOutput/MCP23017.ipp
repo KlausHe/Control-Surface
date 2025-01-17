@@ -37,7 +37,7 @@ MCP23017<WireType>::MCP23017(WireType &wire, uint8_t addressOffset,
 }
 
 template <class WireType>
-void MCP23017<WireType>::pinModeBuffered(pin_t pin, PinMode_t mode) {
+void MCP23017<WireType>::pinModeBuffered(pin_int_t pin, PinMode_t mode) {
     if (mode == INPUT) {
         pinModesDirty |= bufferedPinModes.get(pin) == 0;
         pullupsDirty |= bufferedPullups.get(pin) == 1;
@@ -55,24 +55,25 @@ void MCP23017<WireType>::pinModeBuffered(pin_t pin, PinMode_t mode) {
 }
 
 template <class WireType>
-void MCP23017<WireType>::digitalWriteBuffered(pin_t pin, PinStatus_t status) {
+void MCP23017<WireType>::digitalWriteBuffered(pin_int_t pin,
+                                              PinStatus_t status) {
     bool boolstate = status == HIGH;
     outputsDirty |= bufferedOutputs.get(pin) != boolstate;
     bufferedOutputs.set(pin, boolstate);
 }
 
 template <class WireType>
-PinStatus_t MCP23017<WireType>::digitalReadBuffered(pin_t pin) {
+PinStatus_t MCP23017<WireType>::digitalReadBuffered(pin_int_t pin) {
     return bufferedInputs.get(pin) ? HIGH : LOW;
 }
 
 template <class WireType>
-analog_t MCP23017<WireType>::analogReadBuffered(pin_t pin) {
+analog_t MCP23017<WireType>::analogReadBuffered(pin_int_t pin) {
     return bufferedInputs.get(pin) ? 1023 : 0;
 }
 
 template <class WireType>
-void MCP23017<WireType>::analogWriteBuffered(pin_t pin, analog_t value) {
+void MCP23017<WireType>::analogWriteBuffered(pin_int_t pin, analog_t value) {
     digitalWriteBuffered(pin, value >= 0x80 ? HIGH : LOW);
 }
 
